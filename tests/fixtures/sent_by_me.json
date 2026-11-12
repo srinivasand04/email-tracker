@@ -1,0 +1,27 @@
+{
+  "id": "18f0d00000000003",
+  "threadId": "18f0a1b2c3d4e5f0",
+  "labelIds": [
+    "SENT"
+  ],
+  "snippet": "Thanks Priya, Thursday works.",
+  "internalDate": "1794310800000",
+  "payload": {
+    "mimeType": "text/plain",
+    "filename": "",
+    "headers": [
+      {
+        "name": "From",
+        "value": "me@example.com"
+      },
+      {
+        "name": "Subject",
+        "value": "Re: Senior Python Engineer role"
+      }
+    ],
+    "body": {
+      "size": 1,
+      "data": "VGhhbmtzIFByaXlhLCBUaHVyc2RheSB3b3Jrcy4"
+    }
+  }
+}

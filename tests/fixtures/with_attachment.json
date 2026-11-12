@@ -1,0 +1,54 @@
+{
+  "id": "18f0c00000000002",
+  "threadId": "18f0c00000000002",
+  "labelIds": [
+    "INBOX",
+    "IMPORTANT"
+  ],
+  "snippet": "Please find the offer letter attached.",
+  "internalDate": "1794307200000",
+  "payload": {
+    "mimeType": "multipart/mixed",
+    "filename": "",
+    "headers": [
+      {
+        "name": "From",
+        "value": "hr@initech.example"
+      },
+      {
+        "name": "Subject",
+        "value": "Offer letter"
+      }
+    ],
+    "body": {
+      "size": 0
+    },
+    "parts": [
+      {
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "mimeType": "text/plain",
+            "filename": "",
+            "body": {
+              "size": 38,
+              "data": "UGxlYXNlIGZpbmQgdGhlIG9mZmVyIGxldHRlciBhdHRhY2hlZC4"
+            }
+          }
+        ]
+      },
+      {
+        "mimeType": "application/pdf",
+        "filename": "offer.pdf",
+        "body": {
+          "attachmentId": "ANGjdJ8fake",
+          "size": 52311
+        }
+      }
+    ]
+  }
+}

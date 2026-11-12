@@ -1,0 +1,54 @@
+{
+  "id": "18f0a1b2c3d4e5f6",
+  "threadId": "18f0a1b2c3d4e5f0",
+  "labelIds": [
+    "INBOX",
+    "UNREAD",
+    "CATEGORY_PERSONAL"
+  ],
+  "snippet": "Hi Sri, I came across your profile and wanted to reach out about a Senior Python role",
+  "internalDate": "1794300000000",
+  "payload": {
+    "mimeType": "multipart/alternative",
+    "filename": "",
+    "headers": [
+      {
+        "name": "From",
+        "value": "\"Priya Raman\" <Priya.Raman@Example-Talent.com>"
+      },
+      {
+        "name": "To",
+        "value": "me@example.com"
+      },
+      {
+        "name": "Subject",
+        "value": "Senior Python Engineer role at Acme - quick chat?"
+      },
+      {
+        "name": "Date",
+        "value": "Thu, 12 Nov 2026 10:00:00 +0530"
+      }
+    ],
+    "body": {
+      "size": 0
+    },
+    "parts": [
+      {
+        "mimeType": "text/plain",
+        "filename": "",
+        "body": {
+          "size": 157,
+          "data": "SGkgU3JpLA0KDQpJIGNhbWUgYWNyb3NzIHlvdXIgcHJvZmlsZSBhbmQgd2FudGVkIHRvIHJlYWNoIG91dCBhYm91dCBhIFNlbmlvciBQeXRob24gcm9sZSBhdCBBY21lIGluIEJlbmdhbHVydS4NCg0KQXJlIHlvdSBmcmVlIGZvciBhIGNhbGwgdGhpcyB3ZWVrPw0KDQpQcml5YQ"
+        }
+      },
+      {
+        "mimeType": "text/html",
+        "filename": "",
+        "body": {
+          "size": 68,
+          "data": "PGh0bWw-PGJvZHk-PHA-SFRNTCB2ZXJzaW9uIHRoYXQgc2hvdWxkIGJlIGlnbm9yZWQ8L3A-PC9ib2R5PjwvaHRtbD4"
+        }
+      }
+    ]
+  }
+}

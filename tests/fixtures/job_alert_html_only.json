@@ -1,0 +1,32 @@
+{
+  "id": "18f0b00000000001",
+  "threadId": "18f0b00000000001",
+  "labelIds": [
+    "INBOX",
+    "CATEGORY_UPDATES"
+  ],
+  "snippet": "12 new jobs for Python Developer",
+  "internalDate": "1794303600000",
+  "payload": {
+    "mimeType": "text/html",
+    "filename": "",
+    "headers": [
+      {
+        "name": "From",
+        "value": "LinkedIn Job Alerts <jobalerts-noreply@linkedin.example>"
+      },
+      {
+        "name": "Subject",
+        "value": "=?UTF-8?B?MTIgbmV3IGpvYnMg4oCTIFB5dGhvbiBEZXZlbG9wZXI=?="
+      },
+      {
+        "name": "List-Unsubscribe",
+        "value": "<https://linkedin.example/unsub>"
+      }
+    ],
+    "body": {
+      "size": 1,
+      "data": "PGh0bWw-PGhlYWQ-PHRpdGxlPkpvYnM8L3RpdGxlPjxzdHlsZT5we2NvbG9yOnJlZH08L3N0eWxlPjwvaGVhZD48Ym9keT48c2NyaXB0PnRyYWNrKCk8L3NjcmlwdD48aDE-MTIgbmV3IGpvYnM8L2gxPjxwPlB5dGhvbiZuYnNwO0RldmVsb3BlciAmYW1wOyBtb3JlPC9wPjxhIGhyZWY9J2h0dHBzOi8vbGlua2VkaW4uZXhhbXBsZS9qb2JzLzEnPkJhY2tlbmQgRW5naW5lZXLigIwgYXQgR2xvYmV4PC9hPjwvYm9keT48L2h0bWw-"
+    }
+  }
+}
