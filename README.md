@@ -4,7 +4,8 @@ A personal tool that reads three Gmail accounts on a schedule, classifies new ma
 and shows only the important emails in a private web app (phone and laptop).
 The main goal is to never miss a job opportunity.
 
-**Status:** Phase 1 (ingest) is built. Phases 2-5 are planned below.
+**Status:** Phases 1-3 are built and run locally: all 3 accounts sync, rules + Claude Haiku classify,
+and the dashboard runs on `http://127.0.0.1:3000`. Phase 4 (deploy + schedule) and Phase 5 (alerts) are next.
 
 ## Architecture
 
@@ -56,8 +57,8 @@ correct a wrong category, filter by account, category and date, and search.
 ## Phases
 
 1. **Ingest** - one account into Postgres. *(built)*
-2. **Classify** - rules, then Claude Haiku.
-3. **Dashboard** - the Next.js web app.
+2. **Classify** - rules, then Claude Haiku. *(built; needs `ANTHROPIC_API_KEY`)*
+3. **Dashboard** - the Next.js web app. *(built, local only until Phase 4)*
 4. **Deploy** - all 3 accounts, the 3-hour schedule, Vercel.
 5. **Alerts** - notify on direct opportunities, weekly summary.
 
@@ -188,6 +189,42 @@ picks up every account that has a token.
 | `invalid_grant` during sync | The token was revoked or expired - run `ingest.authorize` again for that account. |
 | `Quota exceeded ... Units per minute per user` | Nothing to do: the sync waits and retries by itself. If it still fails, run it again; it continues where it stopped. |
 | `Gmail API has not been used in project ...` | Step C2: enable the Gmail API, wait a minute, retry. |
+
+### E. Classify with Claude (Phase 2)
+
+1. Sign in at <https://console.anthropic.com>, add a little credit under **Billing**
+   (classifying about 1,000 emails with Claude Haiku costs a few cents), then open
+   **API keys > Create key**, name it `email-tracker`.
+2. Run the helper and click the key's copy button; it saves the key to `.env` without showing it:
+   ```powershell
+   .venv\Scripts\python -m ingest.setup_env
+   ```
+3. Classify everything that is not classified yet:
+   ```powershell
+   .venv\Scripts\python -m ingest.classify
+   ```
+   From now on `ingest.sync` classifies new mail by itself after each sync.
+
+Known bulk senders (for example LinkedIn job alerts) are sorted by rules for free; only
+the rest goes to Claude Haiku. A category you change in the dashboard is never
+overwritten.
+
+### F. Open the dashboard (Phase 3)
+
+```powershell
+npm --prefix web install
+npm --prefix web run dev
+```
+
+Open <http://127.0.0.1:3000>. It only listens on this computer; sign-in with Google and
+phone access come with the Phase 4 deployment.
+
+- **Filters:** account, category, reviewed or not, date range, and search. The default
+  view hides "Everything else" and reviewed mail.
+- **New since your last visit:** mail that arrived since you last opened the page
+  (a new visit starts after 30 minutes away), grouped by category, job categories first.
+- **Each card:** account badge, priority, sender, subject, one-line summary, why it got
+  its category, **Open in Gmail**, **Mark reviewed**, and a dropdown to correct the category.
 
 ## Tests
 

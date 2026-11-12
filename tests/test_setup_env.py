@@ -41,4 +41,9 @@ def test_missing_treats_placeholder_and_blank_as_missing(tmp_path):
         "GOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=GOCSPX-x\n",
         encoding="utf-8",
     )
-    assert missing(env) == ["DATABASE_URL", "GOOGLE_CLIENT_ID"]
+    assert missing(env) == ["DATABASE_URL", "GOOGLE_CLIENT_ID", "ANTHROPIC_API_KEY"]
+
+
+def test_classify_recognises_anthropic_key():
+    assert classify("sk-ant-api03-abc_DEF-123")[0] == "ANTHROPIC_API_KEY"
+    assert classify("sk-ant-oat01-abc") is None  # OAuth tokens are not API keys

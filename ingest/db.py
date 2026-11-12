@@ -147,6 +147,36 @@ class PostgresStore:
         )
         self.conn.commit()
 
+    def unclassified_emails(self, limit: int | None = None):
+        from .classify import EmailToClassify
+
+        rows = self.conn.execute(
+            """
+            SELECT e.id, a.email, e.sender_name, e.sender_email, e.subject, e.snippet,
+                   COALESCE(e.body_excerpt, ''), e.is_list_mail, e.gmail_labels
+            FROM emails e JOIN accounts a ON a.id = e.account_id
+            WHERE e.category IS NULL
+            ORDER BY e.received_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        ).fetchall()
+        self.conn.commit()
+        return [EmailToClassify(*row) for row in rows]
+
+    def save_classification(self, email_id: int, result) -> None:
+        """Store a classification and drop the body excerpt. Never overwrites an existing one."""
+        self.conn.execute(
+            """
+            UPDATE emails SET category = %s, priority = %s, summary = %s, reason = %s,
+                classified_by = %s, classified_at = now(), body_excerpt = NULL, updated_at = now()
+            WHERE id = %s AND category IS NULL
+            """,
+            (result.category, result.priority, result.summary, result.reason,
+             result.classified_by, email_id),
+        )
+        self.conn.commit()
+
     def record_sync_error(self, account_id: int, error: str) -> None:
         self.conn.rollback()
         self.conn.execute(

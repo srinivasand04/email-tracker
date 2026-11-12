@@ -27,7 +27,7 @@ ACCOUNT = "me@example.com"
 def store():
     with db.connect(TEST_DATABASE_URL) as conn:
         conn.execute(
-            "DROP TABLE IF EXISTS sync_state, emails, accounts, schema_migrations CASCADE"
+            "DROP TABLE IF EXISTS app_state, sync_state, emails, accounts, schema_migrations CASCADE"
         )
         conn.commit()
         db.apply_migrations(conn)
@@ -108,6 +108,27 @@ def test_sync_state_cursor_only_moves_forward(store):
     store.record_sync_error(account_id, "boom")
     row = store.conn.execute("SELECT last_status, last_error, last_internal_date_ms FROM sync_state").fetchone()
     assert row == ("error", "boom", 2000)
+
+
+def test_save_classification_clears_excerpt_and_never_overwrites(store, emails):
+    from ingest.classify import Classification
+
+    account_id = store.ensure_account(ACCOUNT)
+    store.upsert_emails(account_id, emails)
+    pending = store.unclassified_emails()
+    assert len(pending) == len(emails)
+    first = pending[0]
+    assert first.account_email == ACCOUNT
+
+    store.save_classification(first.id, Classification("job_alerts", "low", "s", "r", "rules"))
+    store.save_classification(first.id, Classification("personal", "high", "x", "y", "llm"))
+
+    row = store.conn.execute(
+        "SELECT category, priority, body_excerpt, classified_by FROM emails WHERE id = %s", (first.id,)
+    ).fetchone()
+    assert row == ("job_alerts", "low", None, "rules")
+    assert len(store.unclassified_emails()) == len(emails) - 1
+    assert len(store.unclassified_emails(limit=1)) == 1
 
 
 def test_invalid_category_is_rejected(store, emails):

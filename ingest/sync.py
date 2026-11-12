@@ -102,6 +102,7 @@ def sync_account(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sync Gmail accounts into Postgres.")
     parser.add_argument("--account", help="sync only this Gmail address")
+    parser.add_argument("--no-classify", action="store_true", help="skip classifying new mail")
     args = parser.parse_args(argv)
 
     # Imported here so the pure logic above can be tested without these packages configured.
@@ -142,6 +143,19 @@ def main(argv: list[str] | None = None) -> int:
                     store.record_sync_error(store.ensure_account(email), f"{type(exc).__name__}: {exc}")
                 except Exception:
                     pass
+
+        if not args.no_classify:
+            from .classify import MODEL, anthropic_messages, classify_pending
+
+            messages = anthropic_messages()
+            result = classify_pending(store, messages)
+            print(
+                f"Classified {result.by_rules} by rules, {result.by_model} by {MODEL}; "
+                f"{result.left_unclassified} left unclassified"
+            )
+            if messages is None and result.left_unclassified:
+                print("ANTHROPIC_API_KEY is not set, so only the rules ran.")
+            failures += 1 if result.failed else 0
     return 1 if failures else 0
 
 

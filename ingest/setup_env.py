@@ -7,6 +7,7 @@ and the clipboard is cleared. Only the NAME of each saved setting is printed.
   DATABASE_URL          starts with postgresql:// or postgres://
   GOOGLE_CLIENT_ID      ends with .apps.googleusercontent.com
   GOOGLE_CLIENT_SECRET  starts with GOCSPX-
+  ANTHROPIC_API_KEY     starts with sk-ant-api
 
 Windows only (reads the clipboard through PowerShell).
 """
@@ -28,6 +29,7 @@ PATTERNS = {
     "DATABASE_URL": re.compile(r"^postgres(ql)?://\S+$"),
     "GOOGLE_CLIENT_ID": re.compile(r"^[\w-]+\.apps\.googleusercontent\.com$"),
     "GOOGLE_CLIENT_SECRET": re.compile(r"^GOCSPX-[\w-]+$"),
+    "ANTHROPIC_API_KEY": re.compile(r"^sk-ant-api[\w-]+$"),
 }
 PLACEHOLDER_DATABASE_URL = "postgresql://user:password@host/dbname?sslmode=require"
 
@@ -86,7 +88,7 @@ def _powershell(command: str) -> str:
 def main() -> int:
     todo = missing(ENV_PATH)
     if not todo:
-        print("All three settings are already in .env.")
+        print("All settings are already in .env.")
         return 0
     print("Waiting for you to copy: " + ", ".join(todo), flush=True)
     deadline = time.time() + TIMEOUT_SECONDS
