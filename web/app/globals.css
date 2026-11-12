@@ -297,6 +297,36 @@ button:disabled {
   flex: 1 1 140px;
 }
 
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: -4px 0 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
 .empty {
   text-align: center;
   color: var(--muted);

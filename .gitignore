@@ -8,6 +8,9 @@ credentials*.json
 token*.json
 *.pem
 
+# Local logs
+logs/
+
 # Python
 .venv/
 venv/

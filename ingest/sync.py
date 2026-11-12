@@ -145,16 +145,18 @@ def main(argv: list[str] | None = None) -> int:
                     pass
 
         if not args.no_classify:
-            from .classify import MODEL, anthropic_messages, classify_pending
+            from .classify import choose_backend, classify_pending, print_progress
 
-            messages = anthropic_messages()
-            result = classify_pending(store, messages)
+            try:
+                backend = choose_backend()
+            except config.ConfigError as exc:
+                print(f"Classifier: {exc}", file=sys.stderr)
+                backend = None
+            result = classify_pending(store, backend, progress=print_progress)
             print(
-                f"Classified {result.by_rules} by rules, {result.by_model} by {MODEL}; "
-                f"{result.left_unclassified} left unclassified"
+                f"Classified {result.by_rules} by rules, {result.by_model} by "
+                f"{backend.name if backend else 'no model'}; {result.left_unclassified} left unclassified"
             )
-            if messages is None and result.left_unclassified:
-                print("ANTHROPIC_API_KEY is not set, so only the rules ran.")
             failures += 1 if result.failed else 0
     return 1 if failures else 0
 

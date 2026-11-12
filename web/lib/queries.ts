@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { HIDDEN_BY_DEFAULT, UNCLASSIFIED, isCategory } from "./categories";
+import { UNCLASSIFIED, isCategory } from "./categories";
 
 export type EmailRow = {
   id: string;
@@ -50,7 +50,7 @@ export function parseFilters(params: Record<string, string | string[] | undefine
   };
 }
 
-export const EMAIL_LIMIT = 400;
+export const EMAIL_LIMIT = 1000;
 
 export async function listEmails(filters: Filters): Promise<EmailRow[]> {
   const where: string[] = [];
@@ -63,9 +63,9 @@ export async function listEmails(filters: Filters): Promise<EmailRow[]> {
   if (filters.account) where.push(`a.email = ${arg(filters.account)}`);
   if (filters.category === UNCLASSIFIED) where.push("e.category IS NULL");
   else if (filters.category) where.push(`e.category = ${arg(filters.category)}`);
-  else where.push(`(e.category IS NULL OR e.category <> ALL(${arg(HIDDEN_BY_DEFAULT)}))`);
   if (filters.status === "unreviewed") where.push("NOT e.reviewed");
   if (filters.status === "reviewed") where.push("e.reviewed");
+  if (where.length === 0) where.push("TRUE");
   if (filters.from) where.push(`e.received_at >= ${arg(filters.from)}::date`);
   if (filters.to) where.push(`e.received_at < ${arg(filters.to)}::date + 1`);
   if (filters.q) {

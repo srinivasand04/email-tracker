@@ -190,7 +190,20 @@ picks up every account that has a token.
 | `Quota exceeded ... Units per minute per user` | Nothing to do: the sync waits and retries by itself. If it still fails, run it again; it continues where it stopped. |
 | `Gmail API has not been used in project ...` | Step C2: enable the Gmail API, wait a minute, retry. |
 
-### E. Classify with Claude (Phase 2)
+### E0. Free classification with Ollama (default)
+
+The classifier uses a free local model through [Ollama](https://ollama.com) (`qwen3:8b`,
+set `OLLAMA_MODEL` to change it). Free sender and Gmail-label rules handle bulk mail first.
+On a PC without a GPU the model takes about a minute per email; the first backlog takes
+hours once, then only new mail is classified.
+
+```powershell
+.venv\Scripts\python -m ingest.classify              # rules, then Ollama
+powershell -ExecutionPolicy Bypass -File scriptsegister-schedule.ps1   # sync + classify every 3 hours
+scripts\open-dashboard.cmd                           # start (if needed) and open the dashboard
+```
+
+### E. Optional: classify with Claude instead (paid)
 
 1. Sign in at <https://console.anthropic.com>, add a little credit under **Billing**
    (classifying about 1,000 emails with Claude Haiku costs a few cents), then open

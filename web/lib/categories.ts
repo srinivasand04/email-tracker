@@ -31,7 +31,7 @@ export function categoryRank(slug: string | null): number {
 
 export const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
-// Shown collapsed by default
-export const COLLAPSED: readonly string[] = ["job_alerts"];
-// Hidden unless chosen in the category filter
-export const HIDDEN_BY_DEFAULT: readonly string[] = ["other"];
+// Always in "Most important", whatever their priority. High-priority mail of any category is too.
+export const IMPORTANT_CATEGORIES: readonly string[] = ["direct_opportunity", "application_update"];
+// Groups shown collapsed in "Everything else"
+export const COLLAPSED: readonly string[] = ["job_alerts", "other"];

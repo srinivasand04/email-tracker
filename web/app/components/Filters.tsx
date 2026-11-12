@@ -50,7 +50,7 @@ export function Filters({ accounts, filters }: { accounts: string[]; filters: Fi
       <label>
         <span>Category</span>
         <select name="category" defaultValue={filters.category ?? ""} onChange={apply}>
-          <option value="">Important (hides Everything else)</option>
+          <option value="">All categories</option>
           {CATEGORIES.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.label}
