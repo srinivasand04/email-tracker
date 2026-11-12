@@ -106,6 +106,11 @@ repository folder. **Secrets go into the `.env` file only - never into chat, nev
    Copy-Item .env.example .env
    ```
 
+> **Shortcut for the three secret values:** run `.venv\Scripts\python -m ingest.setup_env`
+> and then just click the copy button next to each value in the browser (Neon connection
+> string, Client ID, Client secret). It recognises each one, writes it to `.env`, clears
+> the clipboard and never displays the value.
+
 ### B. Create the Postgres database (Neon)
 
 1. Go to <https://neon.tech> and sign up (free plan).
@@ -181,6 +186,7 @@ picks up every account that has a token.
 | `Error 403: access_denied` in the browser | That Gmail address is not a test user - do step C5. |
 | `invalid_grant` exactly a week after authorizing | The app is still in "Testing" (see the note in step C5) - run `ingest.authorize` again. |
 | `invalid_grant` during sync | The token was revoked or expired - run `ingest.authorize` again for that account. |
+| `Quota exceeded ... Units per minute per user` | Nothing to do: the sync waits and retries by itself. If it still fails, run it again; it continues where it stopped. |
 | `Gmail API has not been used in project ...` | Step C2: enable the Gmail API, wait a minute, retry. |
 
 ## Tests

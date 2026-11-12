@@ -41,6 +41,7 @@ py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
 .venv\Scripts\python -m pytest                 # tests (db tests need TEST_DATABASE_URL)
 .venv\Scripts\python -m ingest.migrate         # apply db/migrations
+.venv\Scripts\python -m ingest.setup_env       # fill .env from the clipboard, secrets never shown
 .venv\Scripts\python -m ingest.authorize       # one-time consent per Gmail account
 .venv\Scripts\python -m ingest.sync            # sync all accounts; --account <address> for one
 .venv\Scripts\python tests\make_fixtures.py    # regenerate fixtures
