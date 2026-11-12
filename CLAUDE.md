@@ -8,6 +8,9 @@ finding job opportunities. Full plan, categories and phases: `README.md`.
 
 - Gmail API with OAuth, scope `gmail.readonly` ONLY. Never add a write scope.
 - OAuth client type "Desktop app"; Google Cloud app must be "In production".
+  Current state: still "Testing" (project `email-tracker-514521`), because Google
+  requires a homepage and privacy-policy URL before publishing. Tokens expire after
+  7 days until this is done in Phase 4 (see README step C5).
 - Ingest runs every 3 hours via GitHub Actions cron (Phase 4).
 - Classifier: rules first, then `claude-haiku-5-5` with structured output. Send only
   sender, subject and the first part of the body. Store a one-line summary, not bodies.

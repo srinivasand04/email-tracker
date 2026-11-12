@@ -132,11 +132,17 @@ repository folder. **Secrets go into the `.env` file only - never into chat, nev
    - App name: `Email Tracker`. User support email: your address.
    - Audience: **External**.
    - Contact email: your address. Accept the policy and create.
-4. Add the read-only scope: under **Data access**, click **Add or remove scopes**, tick
+4. Optional (the script requests the scope itself at sign-in): declare the read-only scope under **Data access**, click **Add or remove scopes**, tick
    `.../auth/gmail.readonly`, then **Update** and **Save**.
-5. Set the app to production: under **Audience**, click **Publish app** and confirm, so the
-   publishing status shows **In production**. You do **not** need to submit it for
-   verification. (If it stays in "Testing", your sign-ins stop working after 7 days.)
+5. Add yourself as a test user: under **Audience > Test users**, click **Add users** and
+   add every Gmail address you want to connect.
+
+   > **Why not "In production" yet:** Google only enables **Publish app** once the Branding
+   > page has a homepage URL and a privacy-policy URL. Those will exist after the web app
+   > is deployed (Phase 4). Until then the app stays in **Testing**, which means each
+   > account's sign-in expires after 7 days and `ingest.authorize` must be run again.
+   > Phase 4 to-do: add the Vercel URL and a `/privacy` page on the Branding page, click
+   > **Publish app**, then re-run `ingest.authorize` once per account.
 6. Create the OAuth client: under **Clients** (or **APIs & Services > Credentials >
    Create credentials > OAuth client ID**), choose application type **Desktop app**,
    name it `email-tracker-local`, and create it.
@@ -172,7 +178,8 @@ picks up every account that has a token.
 | Message | Fix |
 |---------|-----|
 | `DATABASE_URL is not set` | Step B4: the value is missing in `.env`. |
-| `Error 403: access_denied` in the browser | The app is still in "Testing" - do step C5. |
+| `Error 403: access_denied` in the browser | That Gmail address is not a test user - do step C5. |
+| `invalid_grant` exactly a week after authorizing | The app is still in "Testing" (see the note in step C5) - run `ingest.authorize` again. |
 | `invalid_grant` during sync | The token was revoked or expired - run `ingest.authorize` again for that account. |
 | `Gmail API has not been used in project ...` | Step C2: enable the Gmail API, wait a minute, retry. |
 
