@@ -172,7 +172,9 @@ repository folder. **Secrets go into the `.env` file only - never into chat, nev
    .venv\Scripts\python -m ingest.sync
    ```
    Expected output, for example: `you@gmail.com: 212 new, 0 already stored, 9 skipped (sent/drafts), 221 listed`
-   The first run pulls the last 14 days (`INITIAL_SYNC_DAYS` in `.env`) and can take a few minutes.
+   The first run pulls the last 60 days (`INITIAL_SYNC_DAYS` in `.env`) and can take a few minutes.
+   Later runs fetch only mail newer than the last sync, and never anything older than that
+   window. After making the window longer, run `ingest.sync --backfill` once to fill the gap.
 5. Run the same command again. It should report `0 new` - that proves reruns are safe.
 6. Optional check: in Neon, open **Tables > emails** and you should see your recent mail.
 

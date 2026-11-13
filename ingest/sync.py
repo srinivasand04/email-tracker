@@ -44,13 +44,19 @@ class SyncResult:
     inserted: int
 
 
-def build_query(last_internal_date_ms: int | None, now_s: float, initial_days: int) -> str:
-    """Gmail search query for mail newer than the last sync (or the initial window)."""
-    if last_internal_date_ms is None:
-        after = int(now_s) - initial_days * 86400
-    else:
-        after = last_internal_date_ms // 1000 - OVERLAP_SECONDS
-    return f"after:{after}"
+def build_query(
+    last_internal_date_ms: int | None, now_s: float, initial_days: int, backfill: bool = False
+) -> str:
+    """Gmail search query: mail newer than the last sync, never older than the window.
+
+    The window (INITIAL_SYNC_DAYS, default 60) is how far back the first load goes. Later
+    runs continue from the cursor, but never reach further back than the window, even
+    after a long break. backfill=True re-reads the whole window (known mail is skipped).
+    """
+    window_start = int(now_s) - initial_days * 86400
+    if last_internal_date_ms is None or backfill:
+        return f"after:{window_start}"
+    return f"after:{max(window_start, last_internal_date_ms // 1000 - OVERLAP_SECONDS)}"
 
 
 def sync_account(
@@ -60,10 +66,11 @@ def sync_account(
     *,
     initial_days: int,
     now_s: float | None = None,
+    backfill: bool = False,
 ) -> SyncResult:
     account_id = store.ensure_account(account_email)
     state = store.get_sync_state(account_id)
-    query = build_query(state.last_internal_date_ms, now_s or time.time(), initial_days)
+    query = build_query(state.last_internal_date_ms, now_s or time.time(), initial_days, backfill)
 
     listed = list(dict.fromkeys(gmail.list_message_ids(query)))
     known = store.existing_message_ids(account_id, listed)
@@ -103,6 +110,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sync Gmail accounts into Postgres.")
     parser.add_argument("--account", help="sync only this Gmail address")
     parser.add_argument("--no-classify", action="store_true", help="skip classifying new mail")
+    parser.add_argument(
+        "--backfill", action="store_true",
+        help="re-read the whole INITIAL_SYNC_DAYS window (e.g. after making it longer); known mail is skipped",
+    )
     args = parser.parse_args(argv)
 
     # Imported here so the pure logic above can be tested without these packages configured.
@@ -131,7 +142,9 @@ def main(argv: list[str] | None = None) -> int:
         for email, refresh_token in tokens.items():
             try:
                 gmail = GmailClient(credentials_from_refresh_token(refresh_token, client))
-                result = sync_account(gmail, store, email, initial_days=config.initial_sync_days())
+                result = sync_account(
+                    gmail, store, email, initial_days=config.initial_sync_days(), backfill=args.backfill
+                )
                 print(
                     f"{email}: {result.inserted} new, {result.already_stored} already stored, "
                     f"{result.skipped} skipped (sent/drafts), {result.listed} listed"

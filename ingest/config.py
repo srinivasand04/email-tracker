@@ -43,7 +43,7 @@ def oauth_client() -> OAuthClient:
 
 
 def initial_sync_days() -> int:
-    return int(os.environ.get("INITIAL_SYNC_DAYS", "14"))
+    return int(os.environ.get("INITIAL_SYNC_DAYS", "") or "60")
 
 
 def load_refresh_tokens(tokens_dir: Path = TOKENS_DIR) -> dict[str, str]:

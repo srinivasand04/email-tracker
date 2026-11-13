@@ -77,7 +77,34 @@ def test_build_query_first_run_uses_initial_window():
 
 
 def test_build_query_later_runs_use_cursor_minus_overlap():
-    assert build_query(5_000_000_000, now_s=0, initial_days=14) == f"after:{5_000_000 - OVERLAP_SECONDS}"
+    assert build_query(5_000_000_000, now_s=5_000_000, initial_days=60) == f"after:{5_000_000 - OVERLAP_SECONDS}"
+
+
+def test_build_query_never_goes_back_further_than_the_window():
+    now = 100 * 86400
+    old_cursor_ms = 10 * 86400 * 1000  # last sync 90 days ago (PC was off)
+    assert build_query(old_cursor_ms, now_s=now, initial_days=60) == f"after:{now - 60 * 86400}"
+
+
+def test_build_query_backfill_rereads_the_whole_window():
+    now = 100 * 86400
+    recent_cursor_ms = (now - 3600) * 1000
+    assert build_query(recent_cursor_ms, now_s=now, initial_days=60, backfill=True) == f"after:{now - 60 * 86400}"
+
+
+def test_backfill_adds_older_mail_without_moving_the_cursor_back(messages):
+    newest = max(int(m["internalDate"]) for m in messages)
+    now = newest / 1000 + 60
+    store = FakeStore()
+    # first load with a 0-day window only sees nothing older than now
+    sync_account(FakeGmail(messages), store, ACCOUNT, initial_days=0, now_s=now)
+    assert len(store.emails) == 0
+    store.cursor[1] = newest  # pretend the cursor is already at the newest message
+
+    result = sync_account(FakeGmail(messages), store, ACCOUNT, initial_days=60, now_s=now, backfill=True)
+
+    assert result.inserted == 4
+    assert store.cursor[1] == newest
 
 
 def test_first_sync_stores_inbound_mail_and_skips_sent(messages):
