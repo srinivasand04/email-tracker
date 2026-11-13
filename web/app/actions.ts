@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isCategory } from "@/lib/categories";
+import { requireUser, signOut } from "@/auth";
 
 function emailId(id: string): string {
   if (!/^\d+$/.test(id)) throw new Error("Invalid email id");
@@ -10,6 +11,7 @@ function emailId(id: string): string {
 }
 
 export async function setReviewed(id: string, reviewed: boolean): Promise<void> {
+  await requireUser();
   await db().query(
     `UPDATE emails SET reviewed = $2, reviewed_at = CASE WHEN $2 THEN now() END, updated_at = now()
      WHERE id = $1`,
@@ -19,6 +21,7 @@ export async function setReviewed(id: string, reviewed: boolean): Promise<void> 
 }
 
 export async function setManyReviewed(ids: string[]): Promise<void> {
+  await requireUser();
   const clean = ids.filter((id) => /^\d+$/.test(id));
   if (clean.length === 0) return;
   await db().query(
@@ -31,6 +34,7 @@ export async function setManyReviewed(ids: string[]): Promise<void> {
 
 /** A correction from the user. classified_by = 'user' means the classifier never touches it again. */
 export async function setCategory(id: string, category: string): Promise<void> {
+  await requireUser();
   if (!isCategory(category)) throw new Error("Unknown category");
   await db().query(
     `UPDATE emails
@@ -41,4 +45,8 @@ export async function setCategory(id: string, category: string): Promise<void> {
     [emailId(id), category],
   );
   revalidatePath("/");
+}
+
+export async function signOutAction(): Promise<void> {
+  await signOut({ redirectTo: "/signin" });
 }

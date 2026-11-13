@@ -341,3 +341,34 @@ button:disabled {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signin {
+  max-width: 420px;
+  padding-top: 15vh;
+  text-align: center;
+  display: grid;
+  gap: 12px;
+}
+
+.signin button {
+  width: 100%;
+  min-height: 46px;
+}
+
+.prose {
+  max-width: 680px;
+}
+
+.prose p {
+  margin: 0 0 12px;
+}
+
+a {
+  color: var(--accent);
+}

@@ -4,6 +4,8 @@ import { EmailCard, type CardEmail } from "./components/EmailCard";
 import { Filters } from "./components/Filters";
 import { LocalTime } from "./components/LocalTime";
 import { MarkGroupReviewed } from "./components/MarkGroupReviewed";
+import { signOutAction } from "./actions";
+import { auth } from "@/auth";
 import {
   CATEGORIES,
   COLLAPSED,
@@ -159,7 +161,8 @@ export default async function Home({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const filters = parseFilters(await searchParams);
-  const [previousVisit, accounts, rows, syncs] = await Promise.all([
+  const [session, previousVisit, accounts, rows, syncs] = await Promise.all([
+    auth(),
     recordVisit(),
     listAccounts(),
     listEmails(filters),
@@ -178,7 +181,16 @@ export default async function Home({
   return (
     <main>
       <header className="page-header">
-        <h1>Email Tracker</h1>
+        <div className="title-row">
+          <h1>Email Tracker</h1>
+          {session?.user?.email && (
+            <form action={signOutAction}>
+              <button type="submit" className="link-button" title={session.user.email}>
+                Sign out
+              </button>
+            </form>
+          )}
+        </div>
         <p className="meta">
           {lastSync ? (
             <>
