@@ -100,7 +100,30 @@ SENDER_RULES: dict[str, tuple[str, str, str]] = {
     "alerts@welcometothejungle.com": ("job_alerts", "low", "Welcome to the Jungle alert"),
     "mail@timesjobs.com": ("job_alerts", "low", "TimesJobs mailing"),
     "noreply@mail.michaelpage.fr": ("job_alerts", "low", "Michael Page job alert"),
+    "no-reply@notification.prod.jobteaser.net": ("job_alerts", "low", "JobTeaser job alert"),
+    "contact@free-work.com": ("job_alerts", "low", "Free-Work job alert"),
+    "info@mail.heyjobs.co": ("job_alerts", "low", "HeyJobs job alert"),
+    "ne-pas-repondre@meteojob.com": ("job_alerts", "low", "Meteojob job alert"),
+    "marketing@seekube.com": ("job_alerts", "low", "Seekube job mailing"),
+    # bank and broker transaction alerts
+    "alerts@hdfcbank.bank.in": ("finance_bills", "low", "HDFC Bank transaction alert"),
+    "donotreply@transactions.upstox.com": ("finance_bills", "low", "Upstox statement"),
     # newsletters and marketing
+    "information@mailers.hdfcbank.bank.in": ("other", "low", "Bank marketing"),
+    "information@hdfcbank.bank.in": ("other", "low", "Bank marketing"),
+    "services@custcomm.icici.bank.in": ("other", "low", "Bank marketing"),
+    "service@service.icicisecurities.com": ("other", "low", "Broker marketing"),
+    "noreply@campaigns.upstox.com": ("other", "low", "Broker marketing"),
+    "updates@myntra.com": ("other", "low", "Shopping marketing"),
+    "uber@uber.com": ("other", "low", "Uber marketing"),
+    "communication@comm.adidas.in": ("other", "low", "Shopping marketing"),
+    "info@fashionnotification.tatacliq.com": ("other", "low", "Shopping marketing"),
+    "no-reply@sg.newsletter.agoda-emails.com": ("other", "low", "Travel marketing"),
+    "noreply@content.goibibo.com": ("other", "low", "Travel marketing"),
+    "info@mail.joinleland.com": ("other", "low", "Course marketing"),
+    "programmes@info.emeritus.org": ("other", "low", "Course marketing"),
+    "communicationcidj@cidj.com": ("other", "low", "Newsletter"),
+    "groups-noreply@linkedin.com": ("other", "low", "LinkedIn group digest"),
     "newsletters-noreply@linkedin.com": ("other", "low", "LinkedIn newsletter"),
     "linkedin@em.linkedin.com": ("other", "low", "LinkedIn Premium marketing"),
     "marketing-campaigns@welcometothejungle.com": ("other", "low", "Marketing"),
@@ -110,8 +133,12 @@ SENDER_RULES: dict[str, tuple[str, str, str]] = {
 }
 
 # Company career sites (SAP SuccessFactors "jobs2web" and similar) send new openings
-# from addresses like cmacgm-jobnotification@noreply12.jobs2web.com
-JOB_NOTIFICATION_SENDER = re.compile(r"-jobnotification@", re.IGNORECASE)
+# from addresses like cmacgm-jobnotification@noreply12.jobs2web.com or eyjobalerts@noreply12.jobs2web.com
+JOB_NOTIFICATION_SENDER = re.compile(r"-jobnotification@|@noreply\d*\.jobs2web\.com$", re.IGNORECASE)
+
+# LinkedIn's jobs-noreply sends both "your application was viewed/sent" and job suggestions.
+LINKEDIN_JOBS = "jobs-noreply@linkedin.com"
+APPLICATION_SUBJECT = re.compile(r"\byour application\b|\bapplication (was|has been)\b", re.IGNORECASE)
 
 # Anything that might be about a job keeps going to the model, even in Promotions.
 JOB_WORDS = re.compile(
@@ -130,6 +157,13 @@ def classify_by_rules(email: EmailToClassify) -> Classification | None:
     if rule:
         category, priority, reason = rule
         return Classification(category, priority, summary, reason, "rules")
+
+    if sender == LINKEDIN_JOBS:
+        if APPLICATION_SUBJECT.search(email.subject):
+            return Classification(
+                "application_update", "medium", summary, "LinkedIn update on your application", "rules"
+            )
+        return Classification("job_alerts", "low", summary, "LinkedIn job suggestions", "rules")
 
     if JOB_NOTIFICATION_SENDER.search(sender):
         return Classification(
@@ -364,8 +398,12 @@ def classify_pending(
     if backend is None or not for_model:
         return ClassifyResult(by_rules, 0, 0, len(for_model))
 
+    still_unclassified = getattr(store, "still_unclassified", lambda email_id: True)
+
     def run(email: EmailToClassify):
         try:
+            if not still_unclassified(email.id):  # done by a rule or another run meanwhile
+                return email, None, None
             return email, backend.classify(email), None
         except Exception as exc:  # one bad email must not stop the rest
             return email, None, exc
@@ -375,7 +413,7 @@ def classify_pending(
             if result:
                 store.save_classification(email.id, result)
                 by_model += 1
-            else:
+            elif error is not None:
                 failed += 1
                 print(f"  email {email.id}: {type(error).__name__}: {error}", file=sys.stderr)
             if progress:
@@ -416,7 +454,7 @@ def main(argv: list[str] | None = None) -> int:
         f"Classified {result.by_rules} by rules, {result.by_model} by the model; "
         f"{result.left_unclassified} left unclassified"
     )
-    if backend is None and result.left_unclassified:
+    if backend is None and result.left_unclassified and (args.classifier or "auto").lower() != "rules":
         print("No model available (start Ollama), so only the rules ran.")
     return 1 if result.failed else 0
 

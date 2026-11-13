@@ -164,6 +164,13 @@ class PostgresStore:
         self.conn.commit()
         return [EmailToClassify(*row) for row in rows]
 
+    def still_unclassified(self, email_id: int) -> bool:
+        row = self.conn.execute(
+            "SELECT category IS NULL FROM emails WHERE id = %s", (email_id,)
+        ).fetchone()
+        self.conn.commit()
+        return bool(row and row[0])
+
     def save_classification(self, email_id: int, result) -> None:
         """Store a classification and drop the body excerpt. Never overwrites an existing one."""
         self.conn.execute(

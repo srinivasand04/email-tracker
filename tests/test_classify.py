@@ -61,6 +61,24 @@ def test_rules_company_job_notifications():
     assert classify_by_rules(email).category == "company_postings"
 
 
+def test_rules_jobs2web_company_alerts():
+    email = replace(RECRUITER, sender_email="eyjobalerts@noreply12.jobs2web.com", subject="New jobs")
+    assert classify_by_rules(email).category == "company_postings"
+
+
+@pytest.mark.parametrize(
+    ("subject", "category"),
+    [
+        ("Your application was viewed by Acme", "application_update"),
+        ("Srinivasan, your application was sent to Criteo", "application_update"),
+        ("Remote Software Engineer at Criteo and 5 more", "job_alerts"),
+    ],
+)
+def test_rules_split_linkedin_jobs_mail(subject, category):
+    email = replace(RECRUITER, sender_email="jobs-noreply@linkedin.com", subject=subject)
+    assert classify_by_rules(email).category == category
+
+
 def test_rules_promotions_without_job_words_are_other():
     assert classify_by_rules(PROMO).category == "other"
 
@@ -212,3 +230,14 @@ def test_classify_pending_with_model_and_a_failure():
     assert (result.by_rules, result.by_model, result.failed, result.left_unclassified) == (1, 1, 1, 1)
     assert progress[-1] == (2, 2)
     assert [e.id for e in store.unclassified_emails()] == [3]  # a rerun retries only the failed one
+
+
+def test_classify_pending_skips_mail_classified_meanwhile():
+    calls = []
+    store = FakeStore([RECRUITER])
+    store.still_unclassified = lambda email_id: False  # e.g. another run got there first
+
+    result = classify_pending(store, ModelBackend("fake", lambda e: calls.append(e), workers=1))
+
+    assert calls == []
+    assert (result.by_model, result.failed, result.left_unclassified) == (0, 0, 0)
