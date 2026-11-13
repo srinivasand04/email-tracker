@@ -4,8 +4,9 @@ A personal tool that reads three Gmail accounts on a schedule, classifies new ma
 and shows only the important emails in a private web app (phone and laptop).
 The main goal is to never miss a job opportunity.
 
-**Status:** Phases 1-3 are built and run locally: all 3 accounts sync, rules + Claude Haiku classify,
-and the dashboard runs on `http://127.0.0.1:3000`. Phase 4 (deploy + schedule) and Phase 5 (alerts) are next.
+**Status:** Phases 1-4 are live. All 3 accounts sync every 3 hours on the owner's PC, free rules and a local
+Ollama model classify, and the dashboard is at <https://email-tracker-zeta-seven.vercel.app> (Google sign-in,
+owner's addresses only). Phase 5 (alerts) is next.
 
 ## Architecture
 
@@ -201,7 +202,8 @@ hours once, then only new mail is classified.
 
 ```powershell
 .venv\Scripts\python -m ingest.classify              # rules, then Ollama
-powershell -ExecutionPolicy Bypass -File scriptsegister-schedule.ps1   # sync + classify every 3 hours
+powershell -ExecutionPolicy Bypass -File scripts
+egister-schedule.ps1   # sync + classify every 3 hours
 scripts\open-dashboard.cmd                           # start (if needed) and open the dashboard
 ```
 

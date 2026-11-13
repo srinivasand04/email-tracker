@@ -8,11 +8,13 @@ finding job opportunities. Full plan, categories and phases: `README.md`.
 
 - Gmail API with OAuth, scope `gmail.readonly` ONLY. Never add a write scope.
 - OAuth client type "Desktop app"; Google Cloud app must be "In production".
-  Current state: still "Testing" (project `email-tracker-514521`), because Google
-  requires a homepage and privacy-policy URL before publishing. Tokens expire after
-  7 days until this is done in Phase 4 (see README step C5).
-- Ingest runs every 3 hours via GitHub Actions cron (Phase 4).
-- Classifier: rules first, then `claude-haiku-5-5` with structured output. Send only
+  Published to "In production" on 2026-11-13 (project `email-tracker-514521`).
+- Dashboard is deployed on Vercel (free Hobby plan) from `web/`: https://email-tracker-zeta-seven.vercel.app
+  Every push to `main` redeploys. Sign-in: Auth.js + a second Google client ("Web application",
+  `email-tracker-web`), only ALLOWED_EMAILS. Sync and classification stay on the owner's PC
+  (Windows task "Email Tracker sync", every 3 hours, local Ollama).
+- Ingest runs every 3 hours via a Windows scheduled task on the owner's PC (free; local Ollama).
+- Owner wants only free tools. Classifier: rules first, then local Ollama `qwen3:8b`; `claude-haiku-5-5` is optional and unused. Send only
   sender, subject and the first part of the body. Store a one-line summary, not bodies.
 - Postgres on a free tier (Neon). Web app: Next.js on Vercel, PWA, Google sign-in
   limited to the user's own addresses.
@@ -58,5 +60,4 @@ npm --prefix web run build                     # type-check + production build
 - `ingest/gmail_client.py`, `ingest/authorize.py`, `ingest/config.py`
 - `ingest/classify.py` - SENDER_RULES, then Haiku with a JSON-schema output; clears body_excerpt
 - `web/` - Next.js 15 App Router; `lib/queries.ts` (SQL), `app/actions.ts` (server actions),
-  `lib/categories.ts` (must match the CHECK constraint). No auth yet: binds to 127.0.0.1 only.
-  Do not deploy it before Google sign-in limited to the owner's addresses is added (Phase 4).
+  `lib/categories.ts` (must match the CHECK constraint). Every page and server action requires an ALLOWED_EMAILS Google sign-in.
