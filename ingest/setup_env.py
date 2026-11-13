@@ -85,8 +85,18 @@ def _powershell(command: str) -> str:
     return result.stdout
 
 
-def main() -> int:
-    todo = missing(ENV_PATH)
+# The dashboard's sign-in uses a second Google client (type "Web application").
+# With --web, Google client values are saved under these names instead.
+WEB_NAMES = {"GOOGLE_CLIENT_ID": "AUTH_GOOGLE_ID", "GOOGLE_CLIENT_SECRET": "AUTH_GOOGLE_SECRET"}
+
+
+def main(argv: list[str] | None = None) -> int:
+    web = "--web" in (sys.argv[1:] if argv is None else argv)
+    if web:
+        values = read_env(ENV_PATH)
+        todo = [name for name in WEB_NAMES.values() if not values.get(name)]
+    else:
+        todo = missing(ENV_PATH)
     if not todo:
         print("All settings are already in .env.")
         return 0
@@ -94,6 +104,8 @@ def main() -> int:
     deadline = time.time() + TIMEOUT_SECONDS
     while todo and time.time() < deadline:
         found = classify(_powershell("Get-Clipboard -Raw"))
+        if found and web:
+            found = (WEB_NAMES.get(found[0], ""), found[1])
         if found and found[0] in todo:
             name, value = found
             set_env_value(ENV_PATH, name, value)
