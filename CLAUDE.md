@@ -46,7 +46,7 @@ py -3.12 -m venv .venv
 .venv\Scripts\python -m ingest.setup_env       # fill .env from the clipboard, secrets never shown
 .venv\Scripts\python -m ingest.authorize       # one-time consent per Gmail account
 .venv\Scripts\python -m ingest.sync            # sync all accounts; --account <address> for one
-.venv\Scripts\python -m ingest.classify       # rules + claude-haiku-5-5 for unclassified mail
+.venv\Scripts\python -m ingest.classify       # rules, then local Ollama qwen3:8b (free)
 .venv\Scripts\python tests\make_fixtures.py    # regenerate fixtures
 npm --prefix web run dev                       # dashboard on http://127.0.0.1:3000 (reads ../.env)
 npm --prefix web run build                     # type-check + production build
@@ -58,6 +58,6 @@ npm --prefix web run build                     # type-check + production build
 - `ingest/sync.py` - sync loop; cursor = newest `internalDate`, 1 hour overlap, known ids skipped
 - `ingest/db.py` - `PostgresStore`, migrations runner
 - `ingest/gmail_client.py`, `ingest/authorize.py`, `ingest/config.py`
-- `ingest/classify.py` - SENDER_RULES, then Haiku with a JSON-schema output; clears body_excerpt
+- `ingest/classify.py` - SENDER_RULES, then local Ollama (or optional Claude) with a JSON-schema output; clears body_excerpt
 - `web/` - Next.js 15 App Router; `lib/queries.ts` (SQL), `app/actions.ts` (server actions),
   `lib/categories.ts` (must match the CHECK constraint). Every page and server action requires an ALLOWED_EMAILS Google sign-in.
